@@ -1,32 +1,16 @@
-import os
 import random
 import numpy as np
 import pickle as pkl
-import networkx as nx
 import scipy.sparse as sp
-from utils import loadWord2Vec, clean_str
 from math import log
-from sklearn import svm
-from nltk.corpus import wordnet as wn
-from sklearn.feature_extraction.text import TfidfVectorizer
 import sys
-from scipy.spatial.distance import cosine
 
 if len(sys.argv) != 2:
-	sys.exit("Use: python build_graph.py <dataset>")
+    sys.exit("Use: python build_graph.py <dataset>")
 
-datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr']
 # build corpus
-dataset = sys.argv[1]
+dataset_folder = sys.argv[1]
 
-if dataset not in datasets:
-	sys.exit("wrong dataset name")
-
-# Read Word Vectors
-# word_vector_file = 'data/glove.6B/glove.6B.300d.txt'
-# word_vector_file = 'data/corpus/' + dataset + '_word_vectors.txt'
-#_, embd, word_vector_map = loadWord2Vec(word_vector_file)
-# word_embeddings_dim = len(embd[0])
 
 word_embeddings_dim = 300
 word_vector_map = {}
@@ -35,58 +19,53 @@ word_vector_map = {}
 doc_name_list = []
 doc_train_list = []
 doc_test_list = []
+doc_content_list = []
 
-f = open('data/' + dataset + '.txt', 'r')
-lines = f.readlines()
+f_train = open(dataset_folder + '/train.txt', 'r')
+lines = f_train.readlines()
 for line in lines:
-    doc_name_list.append(line.strip())
-    temp = line.split("\t")
-    if temp[1].find('test') != -1:
-        doc_test_list.append(line.strip())
-    elif temp[1].find('train') != -1:
-        doc_train_list.append(line.strip())
-f.close()
+    if len(line)<20:
+        continue
+    elements = line.strip().split("\t")
+    doc_train_list.append(elements[0])
+    doc_content_list.append(elements[1])
+f_train.close()
+
+f_test = open(dataset_folder + '/test.txt', 'r')
+lines = f_test.readlines()
+for line in lines:
+    if len(line)<20:
+        continue
+    elements = line.strip().split("\t")
+    doc_test_list.append(elements[0])
+    doc_content_list.append(elements[1])
+f_test.close()
+
+doc_name_list = doc_train_list + doc_test_list
 # print(doc_train_list)
 # print(doc_test_list)
 
-doc_content_list = []
-f = open('data/corpus/' + dataset + '.clean.txt', 'r')
-lines = f.readlines()
-for line in lines:
-    doc_content_list.append(line.strip())
-f.close()
-# print(doc_content_list)
-
-train_ids = []
-for train_name in doc_train_list:
-    train_id = doc_name_list.index(train_name)
-    train_ids.append(train_id)
-print(train_ids)
+train_ids = [i for i in range(0, len(doc_train_list))]
+# print(train_ids)
 random.shuffle(train_ids)
 
-# partial labeled data
-#train_ids = train_ids[:int(0.2 * len(train_ids))]
-
 train_ids_str = '\n'.join(str(index) for index in train_ids)
-f = open('data/' + dataset + '.train.index', 'w')
+f = open(dataset_folder + '/custom.train.index', 'w')
 f.write(train_ids_str)
 f.close()
 
-test_ids = []
-for test_name in doc_test_list:
-    test_id = doc_name_list.index(test_name)
-    test_ids.append(test_id)
-print(test_ids)
+test_ids = [i for i in range(len(doc_train_list), len(doc_name_list)) ]
+# print(test_ids)
 random.shuffle(test_ids)
 
 test_ids_str = '\n'.join(str(index) for index in test_ids)
-f = open('data/' + dataset + '.test.index', 'w')
+f = open(dataset_folder + '/custom.test.index', 'w')
 f.write(test_ids_str)
 f.close()
 
 ids = train_ids + test_ids
-print(ids)
-print(len(ids))
+# print(ids)
+# print(len(ids))
 
 shuffle_doc_name_list = []
 shuffle_doc_words_list = []
@@ -96,11 +75,11 @@ for id in ids:
 shuffle_doc_name_str = '\n'.join(shuffle_doc_name_list)
 shuffle_doc_words_str = '\n'.join(shuffle_doc_words_list)
 
-f = open('data/' + dataset + '_shuffle.txt', 'w')
+f = open(dataset_folder + '/shuffle_doc_name_str.txt', 'w')
 f.write(shuffle_doc_name_str)
 f.close()
 
-f = open('data/corpus/' + dataset + '_shuffle.txt', 'w')
+f = open(dataset_folder + '/shuffle_doc_words_str_shuffle.txt', 'w')
 f.write(shuffle_doc_words_str)
 f.close()
 
@@ -146,7 +125,7 @@ for i in range(vocab_size):
 
 vocab_str = '\n'.join(vocab)
 
-f = open('data/corpus/' + dataset + '_vocab.txt', 'w')
+f = open(dataset_folder + '/custom_vocab.txt', 'w')
 f.write(vocab_str)
 f.close()
 
@@ -210,12 +189,11 @@ Word definitions end
 # label list
 label_set = set()
 for doc_meta in shuffle_doc_name_list:
-    temp = doc_meta.split('\t')
-    label_set.add(temp[2])
+    label_set.add(doc_meta)
 label_list = list(label_set)
 
 label_list_str = '\n'.join(label_list)
-f = open('data/corpus/' + dataset + '_labels.txt', 'w')
+f = open(dataset_folder + '/custom_labels.txt', 'w')
 f.write(label_list_str)
 f.close()
 
@@ -229,7 +207,7 @@ real_train_size = train_size - val_size  # - int(0.5 * train_size)
 real_train_doc_names = shuffle_doc_name_list[:real_train_size]
 real_train_doc_names_str = '\n'.join(real_train_doc_names)
 
-f = open('data/' + dataset + '.real_train.name', 'w')
+f = open(dataset_folder + '/custom.real_train.name', 'w')
 f.write(real_train_doc_names_str)
 f.close()
 
@@ -254,25 +232,23 @@ for i in range(real_train_size):
         # np.random.uniform(-0.25, 0.25)
         data_x.append(doc_vec[j] / doc_len)  # doc_vec[j]/ doc_len
 
+print("235")
 # x = sp.csr_matrix((real_train_size, word_embeddings_dim), dtype=np.float32)
 x = sp.csr_matrix((data_x, (row_x, col_x)), shape=(
     real_train_size, word_embeddings_dim))
 
 y = []
 for i in range(real_train_size):
-    doc_meta = shuffle_doc_name_list[i]
-    temp = doc_meta.split('\t')
-    label = temp[2]
+    label = shuffle_doc_name_list[i]
     one_hot = [0 for l in range(len(label_list))]
     label_index = label_list.index(label)
     one_hot[label_index] = 1
     y.append(one_hot)
 y = np.array(y)
-print(y)
-
+# print(y)
+print("249")
 # tx: feature vectors of test docs, no initial features
 test_size = len(test_ids)
-
 row_tx = []
 col_tx = []
 data_tx = []
@@ -285,28 +261,25 @@ for i in range(test_size):
         if word in word_vector_map:
             word_vector = word_vector_map[word]
             doc_vec = doc_vec + np.array(word_vector)
-
     for j in range(word_embeddings_dim):
         row_tx.append(i)
         col_tx.append(j)
         # np.random.uniform(-0.25, 0.25)
         data_tx.append(doc_vec[j] / doc_len)  # doc_vec[j] / doc_len
-
+print("269")
 # tx = sp.csr_matrix((test_size, word_embeddings_dim), dtype=np.float32)
 tx = sp.csr_matrix((data_tx, (row_tx, col_tx)),
                    shape=(test_size, word_embeddings_dim))
 
 ty = []
 for i in range(test_size):
-    doc_meta = shuffle_doc_name_list[i + train_size]
-    temp = doc_meta.split('\t')
-    label = temp[2]
+    label = shuffle_doc_name_list[i + train_size]
     one_hot = [0 for l in range(len(label_list))]
     label_index = label_list.index(label)
     one_hot[label_index] = 1
     ty.append(one_hot)
 ty = np.array(ty)
-print(ty)
+# print(ty)
 
 # allx: the the feature vectors of both labeled and unlabeled training instances
 # (a superset of x)
@@ -356,9 +329,7 @@ allx = sp.csr_matrix(
 
 ally = []
 for i in range(train_size):
-    doc_meta = shuffle_doc_name_list[i]
-    temp = doc_meta.split('\t')
-    label = temp[2]
+    label = shuffle_doc_name_list[i]
     one_hot = [0 for l in range(len(label_list))]
     label_index = label_list.index(label)
     one_hot[label_index] = 1
@@ -504,30 +475,30 @@ adj = sp.csr_matrix(
     (weight, (row, col)), shape=(node_size, node_size))
 
 # dump objects
-f = open("data/ind.{}.x".format(dataset), 'wb')
+f = open(dataset_folder+ "/ind.x", 'wb')
 pkl.dump(x, f)
 f.close()
 
-f = open("data/ind.{}.y".format(dataset), 'wb')
+f = open(dataset_folder+"/ind.y", 'wb')
 pkl.dump(y, f)
 f.close()
 
-f = open("data/ind.{}.tx".format(dataset), 'wb')
+f = open(dataset_folder+ "/ind.tx", 'wb')
 pkl.dump(tx, f)
 f.close()
 
-f = open("data/ind.{}.ty".format(dataset), 'wb')
+f = open(dataset_folder+ "/ind.ty", 'wb')
 pkl.dump(ty, f)
 f.close()
 
-f = open("data/ind.{}.allx".format(dataset), 'wb')
+f = open(dataset_folder+ "/ind.allx", 'wb')
 pkl.dump(allx, f)
 f.close()
 
-f = open("data/ind.{}.ally".format(dataset), 'wb')
+f = open(dataset_folder+ "/ind.ally", 'wb')
 pkl.dump(ally, f)
 f.close()
 
-f = open("data/ind.{}.adj".format(dataset), 'wb')
+f = open(dataset_folder+ "/ind.adj", 'wb')
 pkl.dump(adj, f)
 f.close()
