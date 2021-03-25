@@ -280,7 +280,7 @@ for i in range(test_size):
     ty.append(one_hot)
 ty = np.array(ty)
 # print(ty)
-
+print("283")
 # allx: the the feature vectors of both labeled and unlabeled training instances
 # (a superset of x)
 # unlabeled training instances -> words
@@ -318,7 +318,7 @@ for i in range(vocab_size):
         row_allx.append(int(i + train_size))
         col_allx.append(j)
         data_allx.append(word_vectors.item((i, j)))
-
+print("321")
 
 row_allx = np.array(row_allx)
 col_allx = np.array(col_allx)
@@ -346,7 +346,7 @@ print(x.shape, y.shape, tx.shape, ty.shape, allx.shape, ally.shape)
 '''
 Doc word heterogeneous graph
 '''
-
+print("349")
 # word co-occurence with context windows
 window_size = 20
 windows = []

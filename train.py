@@ -12,13 +12,10 @@ import os
 import sys
 
 if len(sys.argv) != 2:
-	sys.exit("Use: python train.py <dataset>")
+    sys.exit("Use: python train.py <dataset>")
 
-datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr']
 dataset = sys.argv[1]
 
-if dataset not in datasets:
-	sys.exit("wrong dataset name")
 
 
 # Set random seed
@@ -27,7 +24,7 @@ np.random.seed(seed)
 tf.set_random_seed(seed)
 
 # Settings
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -166,7 +163,7 @@ print(len(word_embeddings), len(train_doc_embeddings),
       len(test_doc_embeddings))
 print(word_embeddings)
 
-f = open('data/corpus/' + dataset + '_vocab.txt', 'r')
+f = open( dataset + 'custom_vocab.txt', 'r')
 words = f.readlines()
 f.close()
 
@@ -179,7 +176,7 @@ for i in range(vocab_size):
     word_vectors.append(word + ' ' + word_vector_str)
 
 word_embeddings_str = '\n'.join(word_vectors)
-f = open('data/' + dataset + '_word_vectors.txt', 'w')
+f = open(dataset + 'custom_word_vectors.txt', 'w')
 f.write(word_embeddings_str)
 f.close()
 
@@ -198,6 +195,6 @@ for i in range(test_size):
     doc_id += 1
 
 doc_embeddings_str = '\n'.join(doc_vectors)
-f = open('data/' + dataset + '_doc_vectors.txt', 'w')
+f = open(dataset + 'custom_doc_vectors.txt', 'w')
 f.write(doc_embeddings_str)
 f.close()
