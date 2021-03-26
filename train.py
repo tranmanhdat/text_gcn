@@ -33,12 +33,12 @@ flags.DEFINE_string('dataset', dataset, 'Dataset string.')
 # 'gcn', 'gcn_cheby', 'dense'
 flags.DEFINE_string('model', 'gcn', 'Model string.')
 flags.DEFINE_float('learning_rate', 0.02, 'Initial learning rate.')
-flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
+flags.DEFINE_integer('epochs', 250, 'Number of epochs to train.')
 flags.DEFINE_integer('hidden1', 200, 'Number of units in hidden layer 1.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0,
                    'Weight for L2 loss on embedding matrix.')  # 5e-4
-flags.DEFINE_integer('early_stopping', 10,
+flags.DEFINE_integer('early_stopping', 20,
                      'Tolerance for early stopping (# of epochs).')
 flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 
@@ -163,7 +163,7 @@ print(len(word_embeddings), len(train_doc_embeddings),
       len(test_doc_embeddings))
 print(word_embeddings)
 
-f = open( dataset + 'custom_vocab.txt', 'r')
+f = open( dataset + '/custom_vocab.txt', 'r')
 words = f.readlines()
 f.close()
 
@@ -176,7 +176,7 @@ for i in range(vocab_size):
     word_vectors.append(word + ' ' + word_vector_str)
 
 word_embeddings_str = '\n'.join(word_vectors)
-f = open(dataset + 'custom_word_vectors.txt', 'w')
+f = open(dataset + '/custom_word_vectors.txt', 'w')
 f.write(word_embeddings_str)
 f.close()
 
@@ -195,6 +195,6 @@ for i in range(test_size):
     doc_id += 1
 
 doc_embeddings_str = '\n'.join(doc_vectors)
-f = open(dataset + 'custom_doc_vectors.txt', 'w')
+f = open(dataset + '/custom_doc_vectors.txt', 'w')
 f.write(doc_embeddings_str)
 f.close()
