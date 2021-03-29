@@ -7,27 +7,16 @@ Liang Yao, Chengsheng Mao, Yuan Luo. "Graph Convolutional Networks for Text Clas
 
 ## Require
 
-Python 2.7 or 3.6
+Python3.6
 
-Tensorflow >= 1.4.0
+Tensorflow >= 1.14.0, <1.15
 
-## Reproducing Results
+Download data [data_merger](https://drive.google.com/file/d/1sPz-7Rn7iViJ9mvQOZT0F9iKLkVcab61/view?usp=sharing) then rename to _my_custom_data_
+## Train custom data
 
-1. Run `python remove_words.py 20ng`
+1. Run `python build_graph.py my_custom_data`
 
-2. Run `python build_graph.py 20ng`
-
-3. Run `python train.py 20ng`
-
-4. Change `20ng` in above 3 command lines to `R8`, `R52`, `ohsumed` and `mr` when producing results for other datasets.
-
-## Example input data
-
-1. `/data/20ng.txt` indicates document names, training/test split, document labels. Each line is for a document.
-
-2. `/data/corpus/20ng.txt` contains raw text of each document, each line is for the corresponding line in `/data/20ng.txt`
-
-3. `prepare_data.py` is an example for preparing your own data, note that '\n' is removed in your documents or sentences.
+2. Run `python train.py my_custom_data`
 
 ## Inductive version
 
