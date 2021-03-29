@@ -129,62 +129,6 @@ f = open(dataset_folder + '/custom_vocab.txt', 'w')
 f.write(vocab_str)
 f.close()
 
-'''
-Word definitions begin
-'''
-'''
-definitions = []
-
-for word in vocab:
-    word = word.strip()
-    synsets = wn.synsets(clean_str(word))
-    word_defs = []
-    for synset in synsets:
-        syn_def = synset.definition()
-        word_defs.append(syn_def)
-    word_des = ' '.join(word_defs)
-    if word_des == '':
-        word_des = '<PAD>'
-    definitions.append(word_des)
-
-string = '\n'.join(definitions)
-
-
-f = open('data/corpus/' + dataset + '_vocab_def.txt', 'w')
-f.write(string)
-f.close()
-
-tfidf_vec = TfidfVectorizer(max_features=1000)
-tfidf_matrix = tfidf_vec.fit_transform(definitions)
-tfidf_matrix_array = tfidf_matrix.toarray()
-print(tfidf_matrix_array[0], len(tfidf_matrix_array[0]))
-
-word_vectors = []
-
-for i in range(len(vocab)):
-    word = vocab[i]
-    vector = tfidf_matrix_array[i]
-    str_vector = []
-    for j in range(len(vector)):
-        str_vector.append(str(vector[j]))
-    temp = ' '.join(str_vector)
-    word_vector = word + ' ' + temp
-    word_vectors.append(word_vector)
-
-string = '\n'.join(word_vectors)
-
-f = open('data/corpus/' + dataset + '_word_vectors.txt', 'w')
-f.write(string)
-f.close()
-
-word_vector_file = 'data/corpus/' + dataset + '_word_vectors.txt'
-_, embd, word_vector_map = loadWord2Vec(word_vector_file)
-word_embeddings_dim = len(embd[0])
-'''
-
-'''
-Word definitions end
-'''
 
 # label list
 label_set = set()
@@ -200,7 +144,7 @@ f.close()
 # x: feature vectors of training docs, no initial features
 # slect 90% training set
 train_size = len(train_ids)
-val_size = int(0.1 * train_size)
+val_size = int(0.2 * train_size)
 real_train_size = train_size - val_size  # - int(0.5 * train_size)
 # different training rates
 
